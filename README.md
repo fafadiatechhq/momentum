@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="logo.png" alt="Momentum" width="300" />
+</p>
+
 # Momentum for ERPNext
 
 Momentum turns the timesheets and job cards your team already logs in ERPNext into a live management intelligence layer — utilization rates, project profitability, billing leakage, and labor efficiency, all inside your existing ERPNext Desk. No new portal, no new login.

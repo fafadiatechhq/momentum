@@ -1,7 +1,48 @@
-.DS_Store
-*.pyc
-*.egg-info
+# Environment
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.venv/
+venv/
+env/
+
+# Ruff / Linting
+.ruff_cache/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+*.xml
+
+# Editor
+.vscode/
+.idea/
 *.swp
+*.swo
+*~
 tags
-node_modules
-__pycache__
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Node (if any frontend tooling)
+node_modules/
+
+# Claude Code
+.claude/
