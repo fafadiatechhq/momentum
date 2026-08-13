@@ -5,6 +5,10 @@ app_description = "Momentum elevates ERPNext timesheets into a management intell
 app_email = "customercare@fafadiatech.com"
 app_license = "mit"
 
+fixtures = [
+    {"dt": "Role", "filters": [["role_name", "like", "Momentum%"]]},
+]
+
 # Apps
 # ------------------
 

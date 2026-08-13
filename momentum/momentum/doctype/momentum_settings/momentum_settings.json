@@ -1,0 +1,111 @@
+{
+ "actions": [],
+ "creation": "2026-08-13 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "packs_section",
+  "enable_services_pack",
+  "enable_manufacturing_pack",
+  "parameters_section",
+  "standard_working_hours_per_day",
+  "utilization_target_percent",
+  "cb_1",
+  "cost_rate_source",
+  "budget_overrun_threshold_percent",
+  "fiscal_section",
+  "fiscal_year_start_month"
+ ],
+ "fields": [
+  {
+   "fieldname": "packs_section",
+   "fieldtype": "Section Break",
+   "label": "Feature Packs"
+  },
+  {
+   "default": "1",
+   "fieldname": "enable_services_pack",
+   "fieldtype": "Check",
+   "label": "Enable Services Pack"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_manufacturing_pack",
+   "fieldtype": "Check",
+   "label": "Enable Manufacturing Pack"
+  },
+  {
+   "fieldname": "parameters_section",
+   "fieldtype": "Section Break",
+   "label": "Working Hours & Targets"
+  },
+  {
+   "default": "8",
+   "fieldname": "standard_working_hours_per_day",
+   "fieldtype": "Float",
+   "label": "Standard Working Hours Per Day",
+   "reqd": 1
+  },
+  {
+   "default": "75",
+   "fieldname": "utilization_target_percent",
+   "fieldtype": "Float",
+   "label": "Utilization Target %",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cb_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Activity Type Costing Rate",
+   "fieldname": "cost_rate_source",
+   "fieldtype": "Select",
+   "label": "Cost Rate Source",
+   "options": "Employee Cost Rate\nActivity Type Costing Rate\nCustom Field",
+   "reqd": 1
+  },
+  {
+   "default": "90",
+   "fieldname": "budget_overrun_threshold_percent",
+   "fieldtype": "Float",
+   "label": "Budget Overrun Threshold %",
+   "reqd": 1
+  },
+  {
+   "fieldname": "fiscal_section",
+   "fieldtype": "Section Break",
+   "label": "Fiscal Year"
+  },
+  {
+   "default": "January",
+   "fieldname": "fiscal_year_start_month",
+   "fieldtype": "Select",
+   "label": "Fiscal Year Start Month",
+   "options": "January\nFebruary\nMarch\nApril\nMay\nJune\nJuly\nAugust\nSeptember\nOctober\nNovember\nDecember"
+  }
+ ],
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-08-13 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Momentum",
+ "name": "Momentum Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "read": 1,
+   "role": "System Manager",
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Momentum Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

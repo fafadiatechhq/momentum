@@ -1,0 +1,160 @@
+# ── Shared environment ──────────────────────────────────────────────────────────
+x-common-env: &common-env
+  DB_HOST: db
+  DB_PORT: "3306"
+  REDIS_CACHE: redis-cache:6379
+  REDIS_QUEUE: redis-queue:6379
+  SOCKETIO_PORT: "9000"
+
+# ── All services that run the custom image ──────────────────────────────────────
+x-momentum-image: &momentum-image
+  image: fafadiatech/momentum:latest
+  build:
+    context: .
+    dockerfile: Dockerfile
+
+# ── Shared site volume mount ────────────────────────────────────────────────────
+x-sites-volume: &sites-volume
+  - sites:/home/frappe/frappe-bench/sites
+
+services:
+
+  # ── Database ──────────────────────────────────────────────────────────────────
+  db:
+    image: mariadb:10.6
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --skip-character-set-client-handshake
+      - --skip-innodb-read-only-compressed
+    environment:
+      MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD:-changeme}"
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-changeme}"]
+      interval: 5s
+      retries: 12
+      timeout: 5s
+    restart: unless-stopped
+
+  # ── Redis — cache ─────────────────────────────────────────────────────────────
+  redis-cache:
+    image: redis:7-alpine
+    restart: unless-stopped
+
+  # ── Redis — job queue (persistent) ───────────────────────────────────────────
+  redis-queue:
+    image: redis:7-alpine
+    volumes:
+      - redis-queue-data:/data
+    restart: unless-stopped
+
+  # ── Site initialisation (runs once, then exits) ───────────────────────────────
+  create-site:
+    <<: *momentum-image
+    entrypoint: ["/bin/bash", "/home/frappe/frappe-bench/apps/momentum/docker/create-site.sh"]
+    environment:
+      <<: *common-env
+    env_file: .env
+    volumes:
+      *sites-volume
+    depends_on:
+      db:
+        condition: service_healthy
+      redis-cache:
+        condition: service_started
+      redis-queue:
+        condition: service_started
+    restart: on-failure
+
+  # ── Backend — Gunicorn WSGI ───────────────────────────────────────────────────
+  backend:
+    <<: *momentum-image
+    environment:
+      <<: *common-env
+      GUNICORN_WORKERS: "${GUNICORN_WORKERS:-2}"
+      GUNICORN_TIMEOUT: "${GUNICORN_TIMEOUT:-120}"
+    volumes:
+      *sites-volume
+    depends_on:
+      create-site:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  # ── Frontend — nginx reverse proxy ────────────────────────────────────────────
+  frontend:
+    <<: *momentum-image
+    command: nginx-entrypoint.sh
+    environment:
+      BACKEND: backend:8000
+      SOCKETIO: websocket:9000
+      FRAPPE_SITE_NAME_HEADER: "${SITE_NAME:-momentum.localhost}"
+      CLIENT_MAX_BODY_SIZE: "${CLIENT_MAX_BODY_SIZE:-50m}"
+      PROXY_READ_TIMEOUT: "120"
+    volumes:
+      *sites-volume
+    ports:
+      - "8080:8080"
+    depends_on:
+      backend:
+        condition: service_started
+      websocket:
+        condition: service_started
+    restart: unless-stopped
+
+  # ── WebSocket — Socket.IO realtime ────────────────────────────────────────────
+  websocket:
+    <<: *momentum-image
+    command: node /home/frappe/frappe-bench/apps/frappe/socketio.js
+    environment:
+      <<: *common-env
+    volumes:
+      *sites-volume
+    depends_on:
+      create-site:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  # ── Workers ───────────────────────────────────────────────────────────────────
+  worker-short:
+    <<: *momentum-image
+    command: bench worker --queue short,default
+    environment:
+      <<: *common-env
+    volumes:
+      *sites-volume
+    depends_on:
+      create-site:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  worker-long:
+    <<: *momentum-image
+    command: bench worker --queue long,default,short
+    environment:
+      <<: *common-env
+    volumes:
+      *sites-volume
+    depends_on:
+      create-site:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  # ── Scheduler — nightly snapshot jobs ─────────────────────────────────────────
+  scheduler:
+    <<: *momentum-image
+    command: bench schedule
+    environment:
+      <<: *common-env
+    volumes:
+      *sites-volume
+    depends_on:
+      create-site:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+volumes:
+  sites:
+  db-data:
+  redis-queue-data:
