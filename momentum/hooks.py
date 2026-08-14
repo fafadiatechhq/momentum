@@ -154,7 +154,8 @@ fixtures = [
 
 scheduler_events = {
     "daily": [
-        "momentum.momentum.aggregation.services.run_daily_snapshots"
+        "momentum.momentum.aggregation.services.run_daily_snapshots",
+        "momentum.momentum.aggregation.manufacturing.run_daily_manufacturing_snapshots",
     ],
 }
 

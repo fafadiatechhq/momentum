@@ -26,11 +26,14 @@ Momentum turns the timesheets and job cards your team already logs in ERPNext in
 | **Margin Trend by Project** | (Billed − Cost) / Billed over time, driven by nightly project snapshots |
 
 ### Manufacturing Businesses
-- **Operation Efficiency Report** — actual time vs standard time per operation and work center.
-- **Labor Cost Variance** — actual labor cost from Job Cards vs BOM standard costs.
-- **Work Center Utilization** — booked hours vs available capacity per work center.
-- **Operator Productivity** — efficiency % and output by employee.
-- **Shift & Overtime Analysis** — hours by shift with overtime flags.
+
+| Report | Description |
+|---|---|
+| **Operation Efficiency Report** | Actual vs standard time per operation and work center, with efficiency % |
+| **Labor Cost Variance Report** | Actual labor cost (Job Card hours × work center rate) vs BOM planned operating cost, with variance % |
+| **Work Center Utilization** | Booked hours vs available capacity per work center per day, with utilization % |
+| **Operator Productivity** | Efficiency % and completed quantity by employee and operation — unassigned operators grouped by work center |
+| **Shift & Overtime Analysis** | Hours bucketed by Morning / Afternoon / Evening-Night shift, with overtime flagged against your configured working-hours target |
 
 All reports appear inside Frappe's standard Report view. All dashboards appear inside Frappe's native Dashboard view. Nothing outside ERPNext Desk.
 
