@@ -6,6 +6,7 @@ Shows how many weekdays each employee logged time vs expected working days.
 from datetime import date, timedelta
 
 import frappe
+from frappe.utils import add_months, today
 
 
 def _count_weekdays(from_date_str, to_date_str):
@@ -35,9 +36,9 @@ def execute(filters=None):
         {"fieldname": "total_hours",       "label": "Total Hours",       "fieldtype": "Float",                            "width": 110},
     ]
 
-    from_date = filters.get("from_date")
-    to_date = filters.get("to_date")
-    expected_days = _count_weekdays(from_date, to_date) if from_date and to_date else 0
+    from_date = filters.get("from_date") or add_months(today(), -1)
+    to_date = filters.get("to_date") or today()
+    expected_days = _count_weekdays(from_date, to_date)
 
     extra_parts = []
     params = {

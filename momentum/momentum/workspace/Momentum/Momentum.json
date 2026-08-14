@@ -1,0 +1,382 @@
+{
+ "creation": "2026-08-14 00:00:00.000000",
+ "doctype": "Workspace",
+ "icon": "dashboard",
+ "label": "Momentum",
+ "module": "Momentum",
+ "name": "Momentum",
+ "owner": "Administrator",
+ "public": 1,
+ "sequence_id": 1.0,
+ "title": "Momentum",
+ "roles": [
+  {"role": "System Manager"},
+  {"role": "Momentum Manager"},
+  {"role": "Momentum Services Viewer"},
+  {"role": "Momentum Manufacturing Viewer"}
+ ],
+ "shortcuts": [
+  {
+   "color": "Blue",
+   "doc_view": "Form",
+   "label": "Momentum Settings",
+   "link_to": "Momentum Settings",
+   "type": "DocType"
+  },
+  {
+   "color": "Green",
+   "label": "Utilization Summary",
+   "link_to": "Utilization Summary",
+   "report_ref_doctype": "Timesheet",
+   "type": "Report"
+  },
+  {
+   "color": "Orange",
+   "label": "Project Cost vs Budget",
+   "link_to": "Project Cost vs Budget",
+   "report_ref_doctype": "Timesheet",
+   "type": "Report"
+  },
+  {
+   "color": "Red",
+   "label": "At-Risk Projects and Work Orders",
+   "link_to": "At-Risk Projects and Work Orders",
+   "report_ref_doctype": "Momentum Project Snapshot",
+   "type": "Report"
+  },
+  {
+   "color": "Purple",
+   "label": "Company Effort Heatmap",
+   "link_to": "Company Effort Heatmap",
+   "report_ref_doctype": "Timesheet",
+   "type": "Report"
+  },
+  {
+   "color": "Grey",
+   "label": "Unbilled Hours WIP",
+   "link_to": "Unbilled Hours WIP",
+   "report_ref_doctype": "Timesheet",
+   "type": "Report"
+  },
+  {
+   "color": "Green",
+   "label": "Services Dashboard",
+   "link_to": "Momentum Services Dashboard",
+   "type": "Dashboard"
+  },
+  {
+   "color": "Orange",
+   "label": "Manufacturing Dashboard",
+   "link_to": "Momentum Manufacturing Dashboard",
+   "type": "Dashboard"
+  },
+  {
+   "color": "Purple",
+   "label": "Executive Dashboard",
+   "link_to": "Momentum Executive Dashboard",
+   "type": "Dashboard"
+  }
+ ],
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Settings",
+   "link_count": 0,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Momentum Settings",
+   "link_to": "Momentum Settings",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Services Reports",
+   "link_count": 0,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Utilization Summary",
+   "link_to": "Utilization Summary",
+   "link_type": "Report",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Bench Report",
+   "link_to": "Bench Report",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Project Cost vs Budget",
+   "link_to": "Project Cost vs Budget",
+   "link_type": "Report",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Realization Rate",
+   "link_to": "Realization Rate",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Unbilled Hours WIP",
+   "link_to": "Unbilled Hours WIP",
+   "link_type": "Report",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Client Effort Distribution",
+   "link_to": "Client Effort Distribution",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Time Entry Compliance",
+   "link_to": "Time Entry Compliance",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Activity Type Breakdown",
+   "link_to": "Activity Type Breakdown",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Task Estimate vs Actual",
+   "link_to": "Task Estimate vs Actual",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Margin Trend by Project",
+   "link_to": "Margin Trend by Project",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Manufacturing Reports",
+   "link_count": 0,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Operation Efficiency Report",
+   "link_to": "Operation Efficiency Report",
+   "link_type": "Report",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Labor Cost Variance Report",
+   "link_to": "Labor Cost Variance Report",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Work Center Utilization",
+   "link_to": "Work Center Utilization",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Operator Productivity",
+   "link_to": "Operator Productivity",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Shift & Overtime Analysis",
+   "link_to": "Shift & Overtime Analysis",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Executive Reports",
+   "link_count": 0,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Company Effort Heatmap",
+   "link_to": "Company Effort Heatmap",
+   "link_type": "Report",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "At-Risk Projects and Work Orders",
+   "link_to": "At-Risk Projects and Work Orders",
+   "link_type": "Report",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Dashboards",
+   "link_count": 0,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Momentum Services Dashboard",
+   "link_to": "Momentum Services Dashboard",
+   "link_type": "Dashboard",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Momentum Manufacturing Dashboard",
+   "link_to": "Momentum Manufacturing Dashboard",
+   "link_type": "Dashboard",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Momentum Executive Dashboard",
+   "link_to": "Momentum Executive Dashboard",
+   "link_type": "Dashboard",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Timesheets & Data",
+   "link_count": 0,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Timesheet",
+   "link_to": "Timesheet",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Project",
+   "link_to": "Project",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Employee",
+   "link_to": "Employee",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Snapshots",
+   "link_count": 0,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Momentum Project Snapshot",
+   "link_to": "Momentum Project Snapshot",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Momentum Employee Utilization Snapshot",
+   "link_to": "Momentum Employee Utilization Snapshot",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Momentum Operation Efficiency Snapshot",
+   "link_to": "Momentum Operation Efficiency Snapshot",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "content": "[{\"id\":\"mom_hdr_1\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Your Shortcuts</b></span>\",\"col\":12}},{\"id\":\"mom_sc_1\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Momentum Settings\",\"col\":3}},{\"id\":\"mom_sc_2\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Utilization Summary\",\"col\":3}},{\"id\":\"mom_sc_3\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Project Cost vs Budget\",\"col\":3}},{\"id\":\"mom_sc_4\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"At-Risk Projects and Work Orders\",\"col\":3}},{\"id\":\"mom_sc_5\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Company Effort Heatmap\",\"col\":3}},{\"id\":\"mom_sc_6\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Unbilled Hours WIP\",\"col\":3}},{\"id\":\"mom_sc_7\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Services Dashboard\",\"col\":3}},{\"id\":\"mom_sc_8\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Manufacturing Dashboard\",\"col\":3}},{\"id\":\"mom_sc_9\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Executive Dashboard\",\"col\":3}},{\"id\":\"mom_spacer_1\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"mom_hdr_2\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Reports &amp; Masters</b></span>\",\"col\":12}},{\"id\":\"mom_card_1\",\"type\":\"card\",\"data\":{\"card_name\":\"Settings\",\"col\":4}},{\"id\":\"mom_card_2\",\"type\":\"card\",\"data\":{\"card_name\":\"Services Reports\",\"col\":4}},{\"id\":\"mom_card_3\",\"type\":\"card\",\"data\":{\"card_name\":\"Manufacturing Reports\",\"col\":4}},{\"id\":\"mom_card_4\",\"type\":\"card\",\"data\":{\"card_name\":\"Executive Reports\",\"col\":4}},{\"id\":\"mom_card_7\",\"type\":\"card\",\"data\":{\"card_name\":\"Dashboards\",\"col\":4}},{\"id\":\"mom_card_6\",\"type\":\"card\",\"data\":{\"card_name\":\"Timesheets & Data\",\"col\":4}},{\"id\":\"mom_card_5\",\"type\":\"card\",\"data\":{\"card_name\":\"Snapshots\",\"col\":4}}]"
+}

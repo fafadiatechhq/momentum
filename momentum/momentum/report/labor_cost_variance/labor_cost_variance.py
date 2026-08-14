@@ -4,6 +4,7 @@ Compares planned operating cost vs actual labour cost per operation.
 """
 
 import frappe
+from frappe.utils import add_months, today
 
 
 def execute(filters=None):
@@ -13,7 +14,7 @@ def execute(filters=None):
         {"fieldname": "work_order",       "label": "Work Order",       "fieldtype": "Link",    "options": "Work Order", "width": 150},
         {"fieldname": "production_item",  "label": "Production Item",  "fieldtype": "Link",    "options": "Item",       "width": 140},
         {"fieldname": "operation",        "label": "Operation",        "fieldtype": "Data",                             "width": 130},
-        {"fieldname": "work_center",      "label": "Work Center",      "fieldtype": "Link",    "options": "Work Center","width": 140},
+        {"fieldname": "work_center",      "label": "Workstation",      "fieldtype": "Link",    "options": "Workstation","width": 140},
         {"fieldname": "standard_cost",    "label": "Standard Cost",    "fieldtype": "Currency",                         "width": 120},
         {"fieldname": "actual_cost",      "label": "Actual Cost",      "fieldtype": "Currency",                         "width": 120},
         {"fieldname": "cost_variance",    "label": "Cost Variance",    "fieldtype": "Currency",                         "width": 120},
@@ -25,8 +26,8 @@ def execute(filters=None):
         "DATE(jctl.from_time) BETWEEN %(from_date)s AND %(to_date)s",
     ]
     params = {
-        "from_date": filters.get("from_date"),
-        "to_date": filters.get("to_date"),
+        "from_date": filters.get("from_date") or add_months(today(), -1),
+        "to_date": filters.get("to_date") or today(),
     }
 
     if filters.get("company"):
@@ -65,7 +66,7 @@ def execute(filters=None):
         JOIN `tabWork Order` wo ON wo.name = jc.work_order
         LEFT JOIN `tabWork Order Operation` woo
             ON woo.parent = jc.work_order AND woo.operation = jc.operation
-        LEFT JOIN `tabWork Center` wc ON wc.name = jc.workstation
+        LEFT JOIN `tabWorkstation` wc ON wc.name = jc.workstation
         WHERE {conditions}
         GROUP BY jc.work_order, jc.operation, jc.workstation
         ORDER BY cost_variance DESC

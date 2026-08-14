@@ -54,7 +54,7 @@ class TestManufacturingReports(FrappeTestCase):
 
     def test_operation_efficiency_work_center_filter(self):
         from momentum.momentum.report.operation_efficiency.operation_efficiency import execute
-        wc = frappe.db.get_value("Work Center", {}, "name")
+        wc = frappe.db.get_value("Workstation", {}, "name")
         if not wc:
             self.skipTest("No Work Centers found")
         filters = {**self.base_filters, "work_center": wc}
@@ -78,7 +78,7 @@ class TestManufacturingReports(FrappeTestCase):
 
     def test_labor_cost_variance_work_center_filter(self):
         from momentum.momentum.report.labor_cost_variance.labor_cost_variance import execute
-        wc = frappe.db.get_value("Work Center", {}, "name")
+        wc = frappe.db.get_value("Workstation", {}, "name")
         if not wc:
             self.skipTest("No Work Centers found")
         filters = {**self.base_filters, "work_center": wc}
@@ -109,7 +109,7 @@ class TestManufacturingReports(FrappeTestCase):
 
     def test_work_center_utilization_work_center_filter(self):
         from momentum.momentum.report.work_center_utilization.work_center_utilization import execute
-        wc = frappe.db.get_value("Work Center", {}, "name")
+        wc = frappe.db.get_value("Workstation", {}, "name")
         if not wc:
             self.skipTest("No Work Centers found")
         filters = {**self.base_filters, "work_center": wc}
@@ -143,7 +143,7 @@ class TestManufacturingReports(FrappeTestCase):
 
     def test_operator_productivity_work_center_filter(self):
         from momentum.momentum.report.operator_productivity.operator_productivity import execute
-        wc = frappe.db.get_value("Work Center", {}, "name")
+        wc = frappe.db.get_value("Workstation", {}, "name")
         if not wc:
             self.skipTest("No Work Centers found")
         filters = {**self.base_filters, "work_center": wc}
@@ -180,7 +180,7 @@ class TestManufacturingReports(FrappeTestCase):
 
     def test_shift_overtime_analysis_work_center_filter(self):
         from momentum.momentum.report.shift_overtime_analysis.shift_overtime_analysis import execute
-        wc = frappe.db.get_value("Work Center", {}, "name")
+        wc = frappe.db.get_value("Workstation", {}, "name")
         if not wc:
             self.skipTest("No Work Centers found")
         filters = {**self.base_filters, "work_center": wc}

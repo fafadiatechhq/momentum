@@ -59,10 +59,11 @@ if [ -f "$SITES_DIR/$SITE_NAME/site_config.json" ]; then
     if ! echo "$INSTALLED" | grep -q "^momentum$"; then
         echo "[create-site] Installing Momentum on existing site..."
         bench --site "$SITE_NAME" install-app momentum
-        bench --site "$SITE_NAME" migrate
     else
         echo "[create-site] Momentum already installed on '$SITE_NAME'."
     fi
+    echo "[create-site] Running migrations..."
+    bench --site "$SITE_NAME" migrate
 else
     echo "[create-site] Creating site '$SITE_NAME'..."
     bench new-site "$SITE_NAME" \
@@ -85,13 +86,17 @@ else
     echo "[create-site] Site '$SITE_NAME' ready."
 fi
 
+# ── Complete ERPNext setup wizard (if not already done) ─────────────────────────
+# Creates the demo Company programmatically so the seed can run without any
+# manual browser interaction.  Idempotent — skips if a Company already exists.
+echo "[create-site] Completing ERPNext setup wizard (if needed)..."
+bench --site "$SITE_NAME" execute momentum.seed.complete_setup_wizard
+echo "[create-site] Setup wizard step complete."
+
 # ── Seed demo data ──────────────────────────────────────────────────────────────
 # The seed script manages its own idempotency via a sentinel file written to
 # the site directory after a successful full run.  We always invoke it so that
 # deferred seeds (e.g. setup wizard not done yet) retry on the next up.
-# The "|| true" absorbs a known Frappe bench eval quirk that can return exit 1
-# even when the Python function succeeds; real errors are surfaced via the
-# seed's own exception handling and printed to stdout.
 echo "[create-site] Running demo data seed..."
-bench --site "$SITE_NAME" execute momentum.seed.run || true
+bench --site "$SITE_NAME" execute momentum.seed.run
 echo "[create-site] Seed step complete."

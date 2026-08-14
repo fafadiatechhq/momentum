@@ -4,6 +4,7 @@ Shows billable vs total hours per employee with utilization % vs target.
 """
 
 import frappe
+from frappe.utils import add_months, today
 
 
 def execute(filters=None):
@@ -26,8 +27,8 @@ def execute(filters=None):
         "DATE(tsd.from_time) BETWEEN %(from_date)s AND %(to_date)s",
     ]
     params = {
-        "from_date": filters.get("from_date"),
-        "to_date": filters.get("to_date"),
+        "from_date": filters.get("from_date") or add_months(today(), -1),
+        "to_date": filters.get("to_date") or today(),
     }
 
     if filters.get("company"):

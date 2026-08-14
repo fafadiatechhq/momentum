@@ -6,6 +6,7 @@ work_center + operation in that case.
 """
 
 import frappe
+from frappe.utils import add_months, today
 
 
 def execute(filters=None):
@@ -14,7 +15,7 @@ def execute(filters=None):
     columns = [
         {"fieldname": "employee",           "label": "Employee",           "fieldtype": "Link",    "options": "Employee",   "width": 120},
         {"fieldname": "employee_name",      "label": "Employee Name",      "fieldtype": "Data",                             "width": 150},
-        {"fieldname": "work_center",        "label": "Work Center",        "fieldtype": "Link",    "options": "Work Center","width": 140},
+        {"fieldname": "work_center",        "label": "Workstation",        "fieldtype": "Link",    "options": "Workstation","width": 140},
         {"fieldname": "operation",          "label": "Operation",          "fieldtype": "Data",                             "width": 130},
         {"fieldname": "actual_time_mins",   "label": "Actual Time (min)",  "fieldtype": "Float",                            "width": 130},
         {"fieldname": "completed_qty",      "label": "Completed Qty",      "fieldtype": "Float",                            "width": 110},
@@ -27,8 +28,8 @@ def execute(filters=None):
         "DATE(jctl.from_time) BETWEEN %(from_date)s AND %(to_date)s",
     ]
     params = {
-        "from_date": filters.get("from_date"),
-        "to_date": filters.get("to_date"),
+        "from_date": filters.get("from_date") or add_months(today(), -1),
+        "to_date": filters.get("to_date") or today(),
     }
 
     if filters.get("company"):
@@ -43,7 +44,7 @@ def execute(filters=None):
 
     query = """
         SELECT
-            COALESCE(jc.employee, '') AS employee,
+            COALESCE(jctl.employee, '') AS employee,
             COALESCE(emp.employee_name, '(Unassigned)') AS employee_name,
             jc.workstation AS work_center,
             jc.operation,
@@ -53,11 +54,11 @@ def execute(filters=None):
             ROUND(COALESCE(woo.time_in_mins, 0) / NULLIF(SUM(jctl.time_in_mins), 0) * 100, 2) AS efficiency_percent
         FROM `tabJob Card` jc
         JOIN `tabJob Card Time Log` jctl ON jctl.parent = jc.name
-        LEFT JOIN `tabEmployee` emp ON emp.name = jc.employee
+        LEFT JOIN `tabEmployee` emp ON emp.name = jctl.employee
         LEFT JOIN `tabWork Order Operation` woo
             ON woo.parent = jc.work_order AND woo.operation = jc.operation
         WHERE {conditions}
-        GROUP BY jc.employee, jc.workstation, jc.operation
+        GROUP BY jctl.employee, jc.workstation, jc.operation
         ORDER BY efficiency_percent ASC
     """.format(conditions=conditions)
 

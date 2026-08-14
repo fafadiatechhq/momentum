@@ -30,7 +30,7 @@ def rebuild_operation_efficiency_snapshot(target_date, company=None):
         JOIN `tabJob Card Time Log` jctl ON jctl.parent = jc.name
         LEFT JOIN `tabWork Order Operation` woo
             ON woo.parent = jc.work_order AND woo.operation = jc.operation
-        LEFT JOIN `tabWork Center` wc ON wc.name = jc.workstation
+        LEFT JOIN `tabWorkstation` wc ON wc.name = jc.workstation
         WHERE {cond}
         GROUP BY jc.work_order, jc.operation, jc.workstation, jc.company
     """, params, as_dict=True)

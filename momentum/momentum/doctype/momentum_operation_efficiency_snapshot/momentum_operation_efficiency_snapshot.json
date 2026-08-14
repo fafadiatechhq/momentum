@@ -42,8 +42,8 @@
    "fieldname": "work_center",
    "fieldtype": "Link",
    "in_standard_filter": 1,
-   "label": "Work Center",
-   "options": "Work Center",
+   "label": "Workstation",
+   "options": "Workstation",
    "reqd": 1,
    "search_index": 1
   },

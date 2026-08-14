@@ -7,6 +7,8 @@ app_license = "mit"
 
 fixtures = [
     {"dt": "Role", "filters": [["role_name", "like", "Momentum%"]]},
+    {"dt": "Dashboard Chart", "filters": [["name", "like", "Momentum%"]]},
+    {"dt": "Dashboard", "filters": [["name", "like", "Momentum%"]]},
 ]
 
 # Apps
@@ -87,7 +89,7 @@ fixtures = [
 # ------------
 
 # before_install = "momentum.install.before_install"
-# after_install = "momentum.install.after_install"
+after_install = "momentum.install.after_install"
 
 # Uninstallation
 # ------------

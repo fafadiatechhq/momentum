@@ -1,0 +1,86 @@
+[
+ {
+  "charts": [
+   {
+    "chart": "Momentum Avg Utilization Trend",
+    "width": "Half"
+   },
+   {
+    "chart": "Momentum Billable Hours Trend",
+    "width": "Half"
+   },
+   {
+    "chart": "Momentum Project Cost Trend",
+    "width": "Half"
+   },
+   {
+    "chart": "Momentum Invoiced Amount Trend",
+    "width": "Half"
+   }
+  ],
+  "creation": "2026-08-14 00:00:00.000000",
+  "dashboard_name": "Momentum Services Dashboard",
+  "doctype": "Dashboard",
+  "is_default": 0,
+  "is_standard": 0,
+  "module": "Momentum",
+  "name": "Momentum Services Dashboard",
+  "owner": "Administrator"
+ },
+ {
+  "charts": [
+   {
+    "chart": "Momentum Operation Efficiency Trend",
+    "width": "Half"
+   },
+   {
+    "chart": "Momentum Actual Cost Trend",
+    "width": "Half"
+   },
+   {
+    "chart": "Momentum Cost Variance Trend",
+    "width": "Half"
+   },
+   {
+    "chart": "Momentum Efficiency by Work Center",
+    "width": "Half"
+   }
+  ],
+  "creation": "2026-08-14 00:00:00.000000",
+  "dashboard_name": "Momentum Manufacturing Dashboard",
+  "doctype": "Dashboard",
+  "is_default": 0,
+  "is_standard": 0,
+  "module": "Momentum",
+  "name": "Momentum Manufacturing Dashboard",
+  "owner": "Administrator"
+ },
+ {
+  "charts": [
+   {
+    "chart": "Momentum Company Billable Hours",
+    "width": "Half"
+   },
+   {
+    "chart": "Momentum Company Avg Utilization",
+    "width": "Half"
+   },
+   {
+    "chart": "Momentum Total Project Cost Trend",
+    "width": "Half"
+   },
+   {
+    "chart": "Momentum Project Status Distribution",
+    "width": "Half"
+   }
+  ],
+  "creation": "2026-08-14 00:00:00.000000",
+  "dashboard_name": "Momentum Executive Dashboard",
+  "doctype": "Dashboard",
+  "is_default": 0,
+  "is_standard": 0,
+  "module": "Momentum",
+  "name": "Momentum Executive Dashboard",
+  "owner": "Administrator"
+ }
+]

@@ -69,15 +69,33 @@ def rebuild_project_snapshot(target_date, company=None):
         total_cost = agg.get("total_cost") or 0
         billed_amount = agg.get("billed_amount_at_standard_rate") or 0
 
-        # ── Actual invoiced amount (all time, not date-filtered) ───────────────
+        # Cumulative cost through target_date — status is an as-of-date flag,
+        # not a single-day comparison against the full project budget.
+        cum_row = frappe.db.sql(
+            """
+            SELECT COALESCE(SUM(tsd.hours * COALESCE(at.costing_rate, 0)), 0) AS cumulative_cost
+            FROM `tabTimesheet Detail` tsd
+            JOIN `tabTimesheet` ts ON ts.name = tsd.parent
+            LEFT JOIN `tabActivity Type` at ON at.name = tsd.activity_type
+            WHERE ts.docstatus = 1
+              AND tsd.project = %(project)s
+              AND DATE(tsd.from_time) <= %(target_date)s
+            """,
+            {"project": proj_name, "target_date": target_date},
+            as_dict=True,
+        )
+        cumulative_cost = (cum_row[0].get("cumulative_cost") or 0) if cum_row else 0
+
+        # Invoiced amount as of the snapshot date (so trend charts step up).
         inv_row = frappe.db.sql(
             """
             SELECT COALESCE(SUM(si.base_grand_total), 0) AS actual_invoiced
             FROM `tabSales Invoice` si
             WHERE si.project = %(project)s
               AND si.docstatus = 1
+              AND si.posting_date <= %(target_date)s
             """,
-            {"project": proj_name},
+            {"project": proj_name, "target_date": target_date},
             as_dict=True,
         )
         actual_invoiced = (inv_row[0].get("actual_invoiced") or 0) if inv_row else 0
@@ -85,9 +103,9 @@ def rebuild_project_snapshot(target_date, company=None):
         budget_amount = proj.get("estimated_costing") or 0
 
         # ── Determine status flag ──────────────────────────────────────────────
-        if budget_amount and total_cost > budget_amount:
+        if budget_amount and cumulative_cost > budget_amount:
             status_flag = "Over Budget"
-        elif budget_amount and total_cost > budget_amount * (threshold / 100):
+        elif budget_amount and cumulative_cost > budget_amount * (threshold / 100):
             status_flag = "At Risk"
         else:
             status_flag = "On Track"

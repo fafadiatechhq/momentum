@@ -35,7 +35,100 @@ Momentum turns the timesheets and job cards your team already logs in ERPNext in
 | **Operator Productivity** | Efficiency % and completed quantity by employee and operation — unassigned operators grouped by work center |
 | **Shift & Overtime Analysis** | Hours bucketed by Morning / Afternoon / Evening-Night shift, with overtime flagged against your configured working-hours target |
 
+### Executive / Cross-Pack
+
+| Report | Description |
+|---|---|
+| **Company Effort Heatmap** | Hour matrix pivoted by Department × Project (services) or Work Center × Operation (manufacturing) — switch views with a single filter |
+| **At-Risk Projects and Work Orders** | Projects flagged At Risk or Over Budget from nightly snapshots, and work orders whose actual labor cost exceeds standard cost past your overrun threshold — sorted by severity |
+
 All reports appear inside Frappe's standard Report view. All dashboards appear inside Frappe's native Dashboard view. Nothing outside ERPNext Desk.
+
+---
+
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center" colspan="2">
+      <img src="momentum/screenshots/01.png" alt="Momentum Workspace" width="100%" /><br/>
+      <sub><b>Momentum Workspace</b> — All reports, dashboards, and settings accessible from a single hub</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="50%">
+      <img src="momentum/screenshots/02.png" alt="Utilization Summary" width="100%" /><br/>
+      <sub><b>Utilization Summary</b> — Billable vs total hours per employee with utilization % vs target</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="momentum/screenshots/03.png" alt="Project Cost vs Budget" width="100%" /><br/>
+      <sub><b>Project Cost vs Budget</b> — Actual cost vs budget with variance % and at-risk flagging</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="50%">
+      <img src="momentum/screenshots/04.png" alt="Realization Rate" width="100%" /><br/>
+      <sub><b>Realization Rate</b> — Billed amount vs billable hours at standard rate, by project</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="momentum/screenshots/05.png" alt="Unbilled Hours WIP" width="100%" /><br/>
+      <sub><b>Unbilled Hours WIP</b> — Uninvoiced billable hours by project with 0–15 / 16–30 / 30+ day ageing buckets</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="50%">
+      <img src="momentum/screenshots/06.png" alt="Client Effort Distribution" width="100%" /><br/>
+      <sub><b>Client Effort Distribution</b> — Hours and billing value broken down by client and project</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="momentum/screenshots/07.png" alt="Time Entry Compliance" width="100%" /><br/>
+      <sub><b>Time Entry Compliance</b> — Missing or late timesheets vs expected working days per employee</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="50%">
+      <img src="momentum/screenshots/08.png" alt="Activity Type Breakdown" width="100%" /><br/>
+      <sub><b>Activity Type Breakdown</b> — Hours and billing value by activity type (Dev / Design / Support / Management)</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="momentum/screenshots/09.png" alt="Task Estimate vs Actual" width="100%" /><br/>
+      <sub><b>Task Estimate vs Actual</b> — Estimated vs logged hours per task with variance and completion %</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="50%">
+      <img src="momentum/screenshots/10.png" alt="Margin Trend by Project" width="100%" /><br/>
+      <sub><b>Margin Trend by Project</b> — Daily (Billed − Cost) / Billed margin driven by nightly snapshots</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="momentum/screenshots/11.png" alt="Company Effort Heatmap" width="100%" /><br/>
+      <sub><b>Company Effort Heatmap</b> — Hour matrix pivoted by Department × Project or Work Center × Operation</sub>
+    </td>
+  </tr>
+</table>
+
+### Dashboards
+
+<table>
+  <tr>
+    <td align="center" colspan="2">
+      <img src="momentum/screenshots/12.png" alt="Momentum Services Dashboard" width="100%" /><br/>
+      <sub><b>Momentum Services Dashboard</b> — Utilization, billable hours, project cost, and invoiced amount trends for services teams</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2">
+      <img src="momentum/screenshots/13.png" alt="Momentum Manufacturing Dashboard" width="100%" /><br/>
+      <sub><b>Momentum Manufacturing Dashboard</b> — Operation efficiency, actual cost, cost variance, and work center efficiency at a glance</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2">
+      <img src="momentum/screenshots/14.png" alt="Momentum Executive Dashboard" width="100%" /><br/>
+      <sub><b>Momentum Executive Dashboard</b> — Company-wide billable hours, utilization, project cost, and on-track / at-risk / over-budget status</sub>
+    </td>
+  </tr>
+</table>
 
 ---
 
