@@ -54,11 +54,26 @@ The hooks run `ruff` (lint + format), `eslint`, `prettier`, and `pyupgrade` on e
 bench --site your-dev-site.localhost run-tests --app momentum
 ```
 
+To run only the Services Pack report tests:
+
+```bash
+bench --site your-dev-site.localhost run-tests --app momentum \
+  --module momentum.momentum.tests.test_services_reports
+```
+
+Run a single test method:
+
+```bash
+bench --site your-dev-site.localhost run-tests --app momentum \
+  --module momentum.momentum.tests.test_services_reports \
+  --test TestServicesReports.test_utilization_summary_returns_data
+```
+
 ---
 
 ## 2. Docker Development
 
-See the [Dockerized setup](#) section for `docker compose up` instructions. For active development, mount the app source as a volume in `docker-compose.override.yml`:
+See below for `docker compose up` instructions. For active development, mount the app source as a volume in `docker-compose.override.yml`:
 
 ```yaml
 services:
@@ -72,6 +87,31 @@ Then after code changes:
 docker compose exec backend bench --site momentum.localhost migrate
 docker compose restart backend
 ```
+
+### Running tests in Docker
+
+With the stack running (`docker compose up -d`), run the full test suite:
+
+```bash
+docker compose exec backend bench --site momentum.localhost run-tests --app momentum
+```
+
+Run only the Services Pack report tests:
+
+```bash
+docker compose exec backend bench --site momentum.localhost run-tests --app momentum \
+  --module momentum.momentum.tests.test_services_reports
+```
+
+Run a single test method:
+
+```bash
+docker compose exec backend bench --site momentum.localhost run-tests --app momentum \
+  --module momentum.momentum.tests.test_services_reports \
+  --test TestServicesReports.test_utilization_summary_returns_data
+```
+
+> **Note:** The test suite uses seeded data. Make sure the seed has run successfully before executing tests. The seed runs automatically on first `docker compose up`. If you need to re-seed (e.g. after resetting the DB), delete the sentinel file and restart: `docker compose exec backend rm -f /home/frappe/frappe-bench/sites/momentum.localhost/.momentum_seed_complete && docker compose restart create-site`.
 
 ---
 

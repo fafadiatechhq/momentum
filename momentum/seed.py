@@ -14,8 +14,11 @@ What gets created (against the first company found on the site):
   - 2 Departments
   - 4 Activity Types with billing + costing rates
   - 5 Employees
-  - 4 Projects with Tasks  (Services pack demo)
-  - ~65 working-day timesheets spread over the last 90 days
+  - 4 Customers (Demo Client A–D)
+  - 4 Projects with Tasks linked to customers  (Services pack demo)
+  - ~65 working-day timesheets spread over the last 90 days, ~30% linked to tasks
+  - 3 submitted Sales Invoices (one per first 3 projects)
+  - Momentum Project Snapshots for the last 30 working days
   - 1 Item, 1 BOM, 2 Work Centers, 2 Operations,
     2 Work Orders, Job Cards per work order  (Manufacturing pack demo)
 """
@@ -99,8 +102,21 @@ def run():
         _seed_designations()
         activity_types = _seed_activity_types()
         employees = _seed_employees(company, dept_map)
-        projects, tasks = _seed_projects(company)
-        _seed_timesheets(company, employees, projects, tasks, activity_types)
+        customer_map = _seed_customers(company)
+        projects, tasks = _seed_projects(company, customer_map)
+
+        # Build project → tasks mapping for timesheet linking
+        task_map = {}
+        for task_name in tasks:
+            project = frappe.db.get_value("Task", task_name, "project")
+            if project not in task_map:
+                task_map[project] = []
+            task_map[project].append(task_name)
+
+        _seed_timesheets(company, employees, projects, tasks, activity_types, task_map)
+        _seed_sales_invoices(company, projects, default_currency)
+        _seed_project_snapshots(company, projects)
+
         try:
             _seed_manufacturing(company)
         except Exception as mfg_err:
@@ -242,12 +258,61 @@ def _seed_employees(company, dept_map):
     return employee_names
 
 
+# ── Customers ──────────────────────────────────────────────────────────────────
+
+
+def _seed_customers(company):
+    """Create demo customers and return a dict of {customer_name_label: record_name}."""
+    print("[seed] Customers...")
+    customers = [
+        {"customer_name": "Demo Client A"},
+        {"customer_name": "Demo Client B"},
+        {"customer_name": "Demo Client C"},
+        {"customer_name": "Demo Client D"},
+    ]
+    customer_names = {}
+    default_customer_group = (
+        frappe.db.get_value("Customer Group", {"is_group": 0}, "name") or "Commercial"
+    )
+    default_territory = (
+        frappe.db.get_value("Territory", {}, "name") or "All Territories"
+    )
+    for c in customers:
+        label = c["customer_name"]
+        existing = frappe.db.get_value("Customer", {"customer_name": label}, "name")
+        if existing:
+            print(f"  ~ Customer already exists: {label}")
+            customer_names[label] = existing
+        else:
+            doc = frappe.get_doc({
+                "doctype": "Customer",
+                "customer_name": label,
+                "customer_group": default_customer_group,
+                "territory": default_territory,
+                "customer_type": "Company",
+            })
+            doc.insert(ignore_permissions=True)
+            print(f"  + Customer: {doc.name}")
+            customer_names[label] = doc.name
+    frappe.db.commit()
+    return customer_names
+
+
 # ── Projects & Tasks ───────────────────────────────────────────────────────────
 
 
-def _seed_projects(company):
+def _seed_projects(company, customer_map):
     print("[seed] Projects and Tasks...")
     today = date.today()
+
+    # Map project_name label → customer label
+    _project_customer_map = {
+        "Website Redesign — Demo Client A": "Demo Client A",
+        "ERP Implementation — Demo Client B": "Demo Client B",
+        "Mobile App — Demo Client C": "Demo Client C",
+        "Support Retainer — Demo Client D": "Demo Client D",
+    }
+
     seed_projects = [
         {
             "project_name": "Website Redesign — Demo Client A",
@@ -276,10 +341,16 @@ def _seed_projects(company):
 
     for proj in seed_projects:
         pname = proj["project_name"]
+        customer_label = _project_customer_map.get(pname)
+        customer_name = customer_map.get(customer_label) if customer_label else None
+
         existing_proj = frappe.db.get_value("Project", {"project_name": pname, "company": company}, "name")
         if existing_proj:
             print(f"  ~ Project already exists: {pname}")
             project_names.append(existing_proj)
+            # Update customer if not set
+            if customer_name and not frappe.db.get_value("Project", existing_proj, "customer"):
+                frappe.db.set_value("Project", existing_proj, "customer", customer_name)
         else:
             doc = frappe.get_doc({
                 "doctype": "Project",
@@ -290,6 +361,7 @@ def _seed_projects(company):
                 "expected_start_date": today - timedelta(days=90),
                 "expected_end_date": today + timedelta(days=90),
                 "percent_complete_method": "Task Completion",
+                "customer": customer_name,
             })
             doc.insert(ignore_permissions=True)
             print(f"  + Project: {pname}")
@@ -324,10 +396,11 @@ def _seed_projects(company):
 # ── Timesheets ─────────────────────────────────────────────────────────────────
 
 
-def _seed_timesheets(company, employees, projects, tasks, activity_types):
+def _seed_timesheets(company, employees, projects, tasks, activity_types, task_map):
     """
     Create one Timesheet per employee per week for the last 90 days.
     Each timesheet has 5 Timesheet Detail rows (Mon–Fri), 6–8 hours each.
+    ~30% of rows are linked to a task from the same project.
     Skips a week if a timesheet for that employee + start-of-week already exists.
     """
     print("[seed] Timesheets (this may take a moment)...")
@@ -377,7 +450,12 @@ def _seed_timesheets(company, employees, projects, tasks, activity_types):
                 activity = random.choice(activity_types)
                 billable = random.random() > 0.15  # ~85% billable
 
-                time_logs.append({
+                # ~30% chance to link to a task from the same project
+                task = None
+                if random.random() < 0.3 and project in task_map:
+                    task = random.choice(task_map[project])
+
+                log = {
                     "doctype": "Timesheet Detail",
                     "activity_type": activity,
                     "project": project,
@@ -385,7 +463,10 @@ def _seed_timesheets(company, employees, projects, tasks, activity_types):
                     "to_time": _dt(work_date, end_hour, end_minute),
                     "hours": round(hours, 2),
                     "is_billable": 1 if billable else 0,
-                })
+                }
+                if task:
+                    log["task"] = task
+                time_logs.append(log)
 
             if not time_logs:
                 continue
@@ -404,6 +485,98 @@ def _seed_timesheets(company, employees, projects, tasks, activity_types):
 
     frappe.db.commit()
     print(f"  + Timesheets created: {total_created}  (skipped existing: {total_skipped})")
+
+
+# ── Sales Invoices ─────────────────────────────────────────────────────────────
+
+
+def _seed_sales_invoices(company, projects, currency):
+    """Create one submitted Sales Invoice per project for the first 3 projects."""
+    print("[seed] Sales Invoices...")
+
+    income_account = (
+        frappe.db.get_value("Account", {"account_type": "Income Account", "company": company, "is_group": 0}, "name")
+        or frappe.db.get_value("Account", {"root_type": "Income", "company": company, "is_group": 0}, "name")
+    )
+
+    for i, project_name in enumerate(projects[:3]):
+        project_data = frappe.db.get_value(
+            "Project",
+            project_name,
+            ["project_name", "customer", "estimated_costing"],
+            as_dict=True,
+        )
+        if not project_data or not project_data.customer:
+            print(f"  ! Project {project_name} has no customer — skipping Sales Invoice")
+            continue
+
+        existing = frappe.db.get_value(
+            "Sales Invoice",
+            {"project": project_name, "docstatus": ["!=", 2]},
+            "name",
+        )
+        if existing:
+            print(f"  ~ Sales Invoice already exists for project {project_name}")
+            continue
+
+        invoice_amount = round((project_data.estimated_costing or 0) * 0.4, 2)
+
+        si = frappe.get_doc({
+            "doctype": "Sales Invoice",
+            "company": company,
+            "customer": project_data.customer,
+            "project": project_name,
+            "currency": currency,
+            "posting_date": frappe.utils.today(),
+            "due_date": frappe.utils.add_days(frappe.utils.today(), 30),
+            "items": [
+                {
+                    "item_name": f"Services — {project_data.project_name}",
+                    "description": f"Professional services for {project_data.project_name}",
+                    "qty": 1,
+                    "rate": invoice_amount,
+                    "uom": "Nos",
+                    "income_account": income_account,
+                }
+            ],
+        })
+        try:
+            si.insert(ignore_permissions=True)
+            si.submit()
+            print(f"  + Sales Invoice: {si.name} (project: {project_name}, amount: {invoice_amount})")
+        except Exception as e:
+            print(f"  ! Could not create Sales Invoice for {project_name}: {e}")
+
+    frappe.db.commit()
+
+
+# ── Project Snapshots ──────────────────────────────────────────────────────────
+
+
+def _seed_project_snapshots(company, projects):
+    """Seed Momentum Project Snapshot records for the last 30 days."""
+    print("[seed] Momentum Project Snapshots...")
+    from momentum.momentum.aggregation.services import rebuild_project_snapshot
+
+    today = date.today()
+    created = 0
+    for days_ago in range(30, 0, -1):
+        target_date = today - timedelta(days=days_ago)
+        if target_date.weekday() >= 5:  # skip weekends
+            continue
+        # Check if snapshots already exist for this date
+        existing = frappe.db.count(
+            "Momentum Project Snapshot", {"date": target_date, "company": company}
+        )
+        if existing:
+            continue
+        try:
+            rebuild_project_snapshot(str(target_date), company)
+            created += 1
+        except Exception as e:
+            print(f"  ! Snapshot error for {target_date}: {e}")
+
+    print(f"  + Project snapshots built for {created} days")
 
 
 # ── Manufacturing demo data ────────────────────────────────────────────────────

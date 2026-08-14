@@ -11,13 +11,19 @@ Momentum turns the timesheets and job cards your team already logs in ERPNext in
 ## What You Get
 
 ### Services Businesses
-- **Utilization Dashboard** — see at a glance who is billable, who is on the bench, and how the team tracks against your target utilization %.
-- **Project Cost vs Budget** — know in real time whether a project is on track, at risk, or over budget, before the invoice goes out.
-- **Unbilled Hours (WIP)** — find billable hours that have not been invoiced yet, grouped by client and aged by how long they have been sitting.
-- **Realization Rate** — compare what you billed against what your hours were worth at standard rates. Spot discounting and write-offs quickly.
-- **Bench Report** — list every employee below your utilization target so you can act before idle time compounds.
-- **Time Entry Compliance** — see which employees are missing or late on timesheets against expected working days.
-- And more: Activity Type Breakdown, Task Estimate vs Actual, Client Effort Distribution, Margin Trend by Project.
+
+| Report | Description |
+|---|---|
+| **Utilization Summary** | Billable vs total hours per employee with utilization % against your configured target |
+| **Bench Report** | Employees below target utilization in the selected period, with idle-hour total |
+| **Project Cost vs Budget** | Actual cost (hours × costing rate) vs project budget, with variance % and status flag |
+| **Realization Rate** | Billed amount vs billable hours at standard rate, by project — spot discounting and write-offs |
+| **Unbilled Hours (WIP)** | Billable, uninvoiced timesheet hours by project/client with 0–15 / 16–30 / 30+ day ageing buckets |
+| **Client Effort Distribution** | Hours and billing value by client and project across a period |
+| **Time Entry Compliance** | Employees with missing or late timesheets vs expected working days |
+| **Activity Type Breakdown** | Hours and value by activity type (Dev / Design / Support / Management), with employee count |
+| **Task Estimate vs Actual** | Task estimated hours vs actual logged hours, variance and completion % |
+| **Margin Trend by Project** | (Billed − Cost) / Billed over time, driven by nightly project snapshots |
 
 ### Manufacturing Businesses
 - **Operation Efficiency Report** — actual time vs standard time per operation and work center.

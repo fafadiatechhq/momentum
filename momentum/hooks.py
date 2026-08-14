@@ -152,23 +152,11 @@ fixtures = [
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
-# 	"all": [
-# 		"momentum.tasks.all"
-# 	],
-# 	"daily": [
-# 		"momentum.tasks.daily"
-# 	],
-# 	"hourly": [
-# 		"momentum.tasks.hourly"
-# 	],
-# 	"weekly": [
-# 		"momentum.tasks.weekly"
-# 	],
-# 	"monthly": [
-# 		"momentum.tasks.monthly"
-# 	],
-# }
+scheduler_events = {
+    "daily": [
+        "momentum.momentum.aggregation.services.run_daily_snapshots"
+    ],
+}
 
 # Testing
 # -------
