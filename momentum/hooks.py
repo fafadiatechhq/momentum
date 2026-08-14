@@ -90,6 +90,7 @@ fixtures = [
 
 # before_install = "momentum.install.before_install"
 after_install = "momentum.install.after_install"
+after_migrate = ["momentum.install.after_migrate"]
 
 # Uninstallation
 # ------------

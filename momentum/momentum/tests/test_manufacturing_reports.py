@@ -186,3 +186,34 @@ class TestManufacturingReports(FrappeTestCase):
         filters = {**self.base_filters, "work_center": wc}
         columns, data = execute(filters)
         self.assertIsInstance(data, list)
+
+    # ── Snapshots (Manufacturing Dashboard) ──────────────────────────────────────
+
+    def test_operation_efficiency_snapshot_rebuild_inserts_row(self):
+        """Given a submitted Job Card time log, snapshot rebuild inserts a row."""
+        from momentum.momentum.aggregation.manufacturing import (
+            rebuild_operation_efficiency_snapshot,
+        )
+
+        row = frappe.db.sql(
+            """
+            SELECT DATE(jctl.from_time) AS work_date, jc.company
+            FROM `tabJob Card Time Log` jctl
+            JOIN `tabJob Card` jc ON jc.name = jctl.parent
+            WHERE jc.docstatus = 1
+              AND IFNULL(jc.workstation, '') != ''
+            LIMIT 1
+            """,
+            as_dict=True,
+        )
+        if not row:
+            self.skipTest("No submitted Job Card time logs found")
+
+        target_date = str(row[0]["work_date"])
+        company = row[0]["company"]
+        rebuild_operation_efficiency_snapshot(target_date, company)
+        count = frappe.db.count(
+            "Momentum Operation Efficiency Snapshot",
+            {"date": target_date, "company": company},
+        )
+        self.assertGreater(count, 0)

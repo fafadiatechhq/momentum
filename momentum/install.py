@@ -1,5 +1,7 @@
 """App install hooks for Momentum."""
 
+import os
+
 import frappe
 
 MOMENTUM_ROLES = (
@@ -44,3 +46,19 @@ def assign_momentum_manager(user_name):
 def after_install():
 	ensure_momentum_roles()
 	assign_momentum_manager("Administrator")
+
+
+def after_migrate():
+	"""Repair manufacturing demo data on sites that already ran the demo seed.
+
+	Skipped on production installs (no `.momentum_seed_complete` sentinel) and
+	when the setup wizard has not created a Company yet.
+	"""
+	sentinel = frappe.get_site_path(".momentum_seed_complete")
+	if not os.path.exists(sentinel):
+		return
+	if not frappe.db.get_value("Company", {}, "name"):
+		return
+	from momentum.seed import seed_manufacturing_demo
+
+	seed_manufacturing_demo()

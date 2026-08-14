@@ -31,6 +31,10 @@ upgrading Momentum) without wiping source data, run:
     bench --site <site> execute momentum.seed.seed_dashboard_snapshots
     bench --site <site> execute momentum.seed.seed_manufacturing_snapshots
 
+If manufacturing demo data is missing (empty Manufacturing Dashboard) on a
+site that already has the sentinel, run:
+    bench --site <site> execute momentum.seed.seed_manufacturing_demo
+
 Docker usage:
     The docker/create-site.sh script calls complete_setup_wizard() then run()
     automatically on every  docker compose up, so demo data is ready without
@@ -296,7 +300,8 @@ def run():
     # ── Sentinel check ─────────────────────────────────────────────────────────
     sentinel = frappe.get_site_path(_SENTINEL)
     if os.path.exists(sentinel):
-        print("[seed] Already complete (sentinel file found) — nothing to do.")
+        print("[seed] Already complete — ensuring manufacturing demo data.")
+        seed_manufacturing_demo()
         return
 
     # ── Guard: setup wizard must be done ──────────────────────────────────────
@@ -332,12 +337,7 @@ def run():
         _seed_timesheets(company, employees, projects, tasks, activity_types, task_map)
         _seed_sales_invoices(company, projects, default_currency)
         _seed_services_snapshots(company)
-
-        try:
-            _seed_manufacturing(company, employees)
-        except Exception as mfg_err:
-            print(f"  [seed] Manufacturing seed skipped: {mfg_err}")
-            print("  [seed] Enable Manufacturing in ERPNext to seed Work Centers, BOMs, and Job Cards.")
+        _seed_manufacturing(company, employees)
     except Exception as e:
         frappe.db.rollback()
         print(f"\n[seed] ERROR: {e}\n")
@@ -345,7 +345,7 @@ def run():
 
     frappe.db.commit()
 
-    # Write sentinel only after full success
+    # Write sentinel only after full success (including manufacturing).
     open(sentinel, "w").close()
     print("\n[seed] Done. Sentinel written. All demo data is in place.\n")
 
@@ -924,14 +924,44 @@ def _seed_manufacturing(company, employees=None):
     print("[seed] Manufacturing demo data...")
     random.seed(42)
 
+    _ensure_erpnext_manufacturing_settings()
     _seed_work_centers(company)
     _seed_operations(company)
     item_code = _seed_item(company)
-    bom_no = _seed_bom(company, item_code)
+    component_code = _seed_component_item(company)
+    bom_no = _seed_bom(company, item_code, component_code)
     _seed_work_orders(company, item_code, bom_no, employees or [])
     _seed_operation_efficiency_snapshots(company)
 
     frappe.db.commit()
+
+
+def _ensure_erpnext_manufacturing_settings():
+    """Relax Job Card time-log checks so demo evening/overtime logs can submit."""
+    if not frappe.db.exists("DocType", "Manufacturing Settings"):
+        return
+    ms = frappe.get_single("Manufacturing Settings")
+    dirty = False
+    if ms.meta.has_field("allow_overtime") and not ms.allow_overtime:
+        ms.allow_overtime = 1
+        dirty = True
+    if dirty:
+        ms.save(ignore_permissions=True)
+        print("  + Enabled Manufacturing Settings.allow_overtime")
+
+
+def _ensure_workstation_rates_and_hours(name):
+    """hour_rate is computed from hour_rate_labour; working hours avoid JC overlap checks."""
+    ws = frappe.get_doc("Workstation", name)
+    dirty = False
+    if not (ws.hour_rate_labour or 0):
+        ws.hour_rate_labour = 500
+        dirty = True
+    if not ws.working_hours:
+        ws.append("working_hours", {"start_time": "00:00:00", "end_time": "23:59:59"})
+        dirty = True
+    if dirty:
+        ws.save(ignore_permissions=True)
 
 
 def _seed_work_centers(company):
@@ -941,16 +971,21 @@ def _seed_work_centers(company):
     ]
     for wc in work_centers:
         name = wc["workstation_name"]
-        if not _exists("Workstation", {"workstation_name": name}):
-            frappe.get_doc({
-                "doctype": "Workstation",
-                "workstation_name": name,
-                "hour_rate": 500,
-                "production_capacity": wc["production_capacity"],
-            }).insert(ignore_permissions=True)
-            print(f"  + Workstation: {name}")
-        else:
+        existing = frappe.db.get_value("Workstation", {"workstation_name": name}, "name")
+        if existing:
+            _ensure_workstation_rates_and_hours(existing)
             print(f"  ~ Workstation already exists: {name}")
+            continue
+        frappe.get_doc({
+            "doctype": "Workstation",
+            "workstation_name": name,
+            "hour_rate_labour": 500,
+            "production_capacity": wc["production_capacity"],
+            "working_hours": [
+                {"start_time": "00:00:00", "end_time": "23:59:59"},
+            ],
+        }).insert(ignore_permissions=True)
+        print(f"  + Workstation: {name}")
 
 
 def _seed_operations(company):
@@ -986,7 +1021,30 @@ def _seed_item(company):
     return item_code
 
 
-def _seed_bom(company, item_code):
+def _seed_component_item(company):
+    """Raw material required by ERPNext BOM.validate_materials (items cannot be blank).
+
+    Non-stock so Work Orders / Job Cards do not require a material transfer.
+    """
+    item_code = "MOMENTUM-DEMO-COMPONENT"
+    if not _exists("Item", {"item_code": item_code}):
+        item = frappe.get_doc({
+            "doctype": "Item",
+            "item_code": item_code,
+            "item_name": "Demo Component (Momentum Seed)",
+            "item_group": frappe.db.get_value("Item Group", {"is_group": 0}, "name") or "Products",
+            "stock_uom": "Nos",
+            "is_stock_item": 0,
+            "include_item_in_manufacturing": 1,
+        })
+        item.insert(ignore_permissions=True)
+        print(f"  + Item: {item_code}")
+    else:
+        print(f"  ~ Item already exists: {item_code}")
+    return item_code
+
+
+def _seed_bom(company, item_code, component_code):
     existing_bom = frappe.db.get_value(
         "BOM",
         {"item": item_code, "is_default": 1, "is_active": 1, "docstatus": 1},
@@ -996,18 +1054,42 @@ def _seed_bom(company, item_code):
         print(f"  ~ BOM already exists: {existing_bom}")
         return existing_bom
 
-    # Check for an unsubmitted draft BOM too
+    assembly_wc = frappe.db.get_value("Workstation", {"workstation_name": "Assembly Line A"}, "name")
+    qc_wc = frappe.db.get_value("Workstation", {"workstation_name": "Quality Control"}, "name")
+    operations = [
+        {
+            "operation": "Assembly",
+            "workstation": assembly_wc,
+            "time_in_mins": 60,
+            "operating_cost": 500,
+        },
+        {
+            "operation": "Quality Inspection",
+            "workstation": qc_wc,
+            "time_in_mins": 30,
+            "operating_cost": 250,
+        },
+    ]
+    items = [{"item_code": component_code, "qty": 1}]
+
     draft_bom = frappe.db.get_value(
         "BOM",
         {"item": item_code, "docstatus": 0},
         "name",
     )
     if draft_bom:
-        print(f"  ~ Draft BOM already exists: {draft_bom}")
-        return draft_bom
-
-    assembly_wc = frappe.db.get_value("Workstation", {"workstation_name": "Assembly Line A"}, "name")
-    qc_wc = frappe.db.get_value("Workstation", {"workstation_name": "Quality Control"}, "name")
+        bom = frappe.get_doc("BOM", draft_bom)
+        if not bom.get("items"):
+            for row in items:
+                bom.append("items", row)
+        if not bom.get("operations"):
+            bom.with_operations = 1
+            for row in operations:
+                bom.append("operations", row)
+        bom.save(ignore_permissions=True)
+        bom.submit()
+        print(f"  + Submitted draft BOM: {bom.name}")
+        return bom.name
 
     bom = frappe.get_doc({
         "doctype": "BOM",
@@ -1017,20 +1099,8 @@ def _seed_bom(company, item_code):
         "is_default": 1,
         "is_active": 1,
         "with_operations": 1,
-        "operations": [
-            {
-                "operation": "Assembly",
-                "workstation": assembly_wc,
-                "time_in_mins": 60,
-                "operating_cost": 500,
-            },
-            {
-                "operation": "Quality Inspection",
-                "workstation": qc_wc,
-                "time_in_mins": 30,
-                "operating_cost": 250,
-            },
-        ],
+        "operations": operations,
+        "items": items,
     })
     bom.insert(ignore_permissions=True)
     bom.submit()
@@ -1352,3 +1422,30 @@ def seed_manufacturing_snapshots():
     _seed_operation_efficiency_snapshots(company)
     frappe.db.commit()
     print("[seed] Done.")
+
+
+def seed_manufacturing_demo():
+    """
+    Idempotent manufacturing demo data: Workstations, BOM (with raw material),
+    Work Orders, Job Cards, and Operation Efficiency Snapshots.
+
+    Ignores the seed sentinel so existing Docker sites can be repaired without
+    wiping services data.
+
+    Usage:
+        bench --site <site> execute momentum.seed.seed_manufacturing_demo
+    """
+    frappe.set_user("Administrator")
+    company = frappe.db.get_value("Company", {}, "name")
+    if not company:
+        print("[seed] No company found — run the ERPNext setup wizard first.")
+        return
+    _ensure_momentum_settings()
+    employees = frappe.get_all(
+        "Employee",
+        filters={"status": "Active", "company": company},
+        pluck="name",
+    )
+    _seed_manufacturing(company, employees)
+    frappe.db.commit()
+    print("[seed] Manufacturing demo data complete.")

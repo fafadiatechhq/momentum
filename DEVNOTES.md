@@ -10,12 +10,12 @@ This document covers everything a developer needs to work on the Momentum app: l
 2. [Docker Development](#2-docker-development)
 3. [Architecture Overview](#3-architecture-overview)
 4. [DocType Reference](#4-doctype-reference)
-5. [Adding a New Report](#5-adding-a-new-report)
-6. [Snapshot Scheduler](#6-snapshot-scheduler)
-7. [Roles & Permissions](#7-roles--permissions)
-8. [Seed Data](#8-seed-data)
-9. [Performance Guidelines](#9-performance-guidelines)
-10. [Open Engineering Questions (from PRD)](#10-open-engineering-questions-from-prd)
+5. [Report Inventory](#5-report-inventory)
+6. [Adding a New Report](#6-adding-a-new-report)
+7. [Snapshot Scheduler](#7-snapshot-scheduler)
+8. [Roles & Permissions](#8-roles--permissions)
+9. [Seed Data](#9-seed-data)
+10. [Performance Guidelines](#10-performance-guidelines)
 
 ---
 
@@ -54,11 +54,20 @@ The hooks run `ruff` (lint + format), `eslint`, `prettier`, and `pyupgrade` on e
 bench --site your-dev-site.localhost run-tests --app momentum
 ```
 
-To run only the Services Pack report tests:
+To run only one pack's tests:
 
 ```bash
+# Services Pack (30 tests)
 bench --site your-dev-site.localhost run-tests --app momentum \
   --module momentum.momentum.tests.test_services_reports
+
+# Manufacturing Pack (19 tests)
+bench --site your-dev-site.localhost run-tests --app momentum \
+  --module momentum.momentum.tests.test_manufacturing_reports
+
+# Exec/Shared reports (17 tests)
+bench --site your-dev-site.localhost run-tests --app momentum \
+  --module momentum.momentum.tests.test_exec_reports
 ```
 
 Run a single test method:
@@ -96,11 +105,20 @@ With the stack running (`docker compose up -d`), run the full test suite:
 docker compose exec backend bench --site momentum.localhost run-tests --app momentum
 ```
 
-Run only the Services Pack report tests:
+Run only one pack's tests:
 
 ```bash
+# Services Pack (30 tests)
 docker compose exec backend bench --site momentum.localhost run-tests --app momentum \
   --module momentum.momentum.tests.test_services_reports
+
+# Manufacturing Pack (19 tests)
+docker compose exec backend bench --site momentum.localhost run-tests --app momentum \
+  --module momentum.momentum.tests.test_manufacturing_reports
+
+# Exec/Shared reports (17 tests)
+docker compose exec backend bench --site momentum.localhost run-tests --app momentum \
+  --module momentum.momentum.tests.test_exec_reports
 ```
 
 Run a single test method:
@@ -163,7 +181,47 @@ Fields: `work_order`, `operation`, `work_center`, `date`, `standard_time_mins`, 
 
 ---
 
-## 5. Adding a New Report
+## 5. Report Inventory
+
+All 17 PRD reports are implemented. Each lives at `momentum/momentum/report/<slug>/<slug>.py` and exports `execute(filters)`.
+
+### Services Pack (Section 7.1) — test module `test_services_reports` (30 tests)
+
+| Slug | Description |
+|---|---|
+| `utilization_summary` | Employee billable % vs target |
+| `bench_report` | Employees below target utilization |
+| `project_cost_vs_budget` | Actual cost vs estimated with variance |
+| `realization_rate` | Billed vs standard rate; reads `Sales Invoice` |
+| `unbilled_hours_wip` | Billable uninvoiced hours aged 0–15 / 16–30 / 30+ days |
+| `client_effort_distribution` | Hours by customer + project |
+| `time_entry_compliance` | Missing timesheet days vs expected working days |
+| `activity_type_breakdown` | Hours and value by activity type |
+| `task_estimate_vs_actual` | `Task.expected_time` vs actual logged hours |
+| `margin_trend_by_project` | (Billed − cost) / billed from `Momentum Project Snapshot` |
+
+### Manufacturing Pack (Section 7.2) — test module `test_manufacturing_reports` (19 tests)
+
+| Slug | Description |
+|---|---|
+| `operation_efficiency` | Actual vs standard time per operation/work center, efficiency % |
+| `labor_cost_variance` | Actual labor cost vs `BOM.planned_operating_cost` |
+| `work_center_utilization` | Booked hours vs available capacity by work center and date |
+| `operator_productivity` | Efficiency % and completed qty by employee; NULL → "(Unassigned)" |
+| `shift_overtime_analysis` | Hours bucketed into Morning/Afternoon/Evening-Night; overtime vs `Momentum Settings.standard_working_hours_per_day` |
+
+All Manufacturing reports query `Job Card` + `Job Card Time Log` where `docstatus = 1`. Work center filter maps to `jc.workstation` (ERPNext v15 field name).
+
+### Exec / Shared (Section 7.3) — test module `test_exec_reports` (17 tests)
+
+| Slug | Description |
+|---|---|
+| `company_effort_heatmap` | Dynamic pivot matrix: view_by="Project" (Dept × Project) or "Work Center" (Work Center × Operation). Column fieldnames are `col_0`, `col_1`, … |
+| `at_risk_projects_and_work_orders` | Projects from `Momentum Project Snapshot` where `status_flag` is "At Risk" or "Over Budget"; Work Orders from `Momentum Operation Efficiency Snapshot` where `actual_cost > standard_cost × threshold`. Sorted: Over Budget first, then At Risk, then by overrun % desc. |
+
+---
+
+## 6. Adding a New Report
 
 1. Create the Script Report via Frappe Desk (DocType: `Report`, type: `Script Report`).
 2. Place the Python file at:
@@ -187,7 +245,7 @@ Fields: `work_order`, `operation`, `work_center`, `date`, `standard_time_mins`, 
 
 ---
 
-## 6. Snapshot Scheduler
+## 7. Snapshot Scheduler
 
 Entry point in `hooks.py`:
 ```python
@@ -214,7 +272,7 @@ bench --site your-site.localhost execute momentum.tasks.rebuild_daily_snapshots
 
 ---
 
-## 7. Roles & Permissions
+## 8. Roles & Permissions
 
 Three roles, defined in fixtures:
 
@@ -228,7 +286,7 @@ Permission query conditions are set on all Snapshot doctypes and all reports to 
 
 ---
 
-## 8. Seed Data
+## 9. Seed Data
 
 The seed script creates demo data for development and testing. It is idempotent — safe to run multiple times.
 
@@ -249,20 +307,10 @@ All records use the first company found on the site. If a record already exists 
 
 ---
 
-## 9. Performance Guidelines
+## 10. Performance Guidelines
 
 - All Script Reports must run against 50k+ Timesheet rows in under 5 seconds.
 - Use `frappe.db.sql()` with `GROUP BY` and aggregate functions. Do not fetch all rows and aggregate in Python.
 - Snapshot tables must have composite indexes on `(date, <link field>)`. Define these in the DocType JSON (`in_standard_filter: 1`, `search_index: 1`).
 - Number Cards and Dashboard Charts always query snapshot doctypes — never live Timesheet/Job Card tables.
 - For the backfill path, use `frappe.db.bulk_insert()` when inserting many snapshot rows at once.
-
----
-
-## 10. Open Engineering Questions (from PRD)
-
-These are unresolved before implementation begins on the relevant reports:
-
-1. **Employee cost rate source in ERPNext v15** — `Momentum Settings.cost_rate_source` supports three modes: "Employee Cost Rate", "Activity Type Costing Rate", "Custom Field". The exact field paths in ERPNext v15 for the first and third options need to be confirmed against the client's ERPNext configuration before the snapshot builder is written. The Activity Type path is straightforward (`Activity Type.costing_rate`).
-
-2. **Standard time source for manufacturing efficiency** — The Operation Efficiency Snapshot needs a "standard time" baseline. In ERPNext v15, this can come from either the `BOM Operation.time_in_mins` field or the `Operation` master's default time. Confirm which the client's manufacturing module uses before building the manufacturing aggregation logic.

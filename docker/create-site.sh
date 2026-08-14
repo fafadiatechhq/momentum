@@ -100,3 +100,9 @@ echo "[create-site] Setup wizard step complete."
 echo "[create-site] Running demo data seed..."
 bench --site "$SITE_NAME" execute momentum.seed.run
 echo "[create-site] Seed step complete."
+
+# Repair manufacturing demo data on sites that already have the seed sentinel
+# (e.g. first run skipped BOM/Job Cards). Idempotent — safe on a fresh site too.
+echo "[create-site] Ensuring manufacturing demo data..."
+bench --site "$SITE_NAME" execute momentum.seed.seed_manufacturing_demo
+echo "[create-site] Manufacturing demo data complete."

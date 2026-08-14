@@ -9,7 +9,11 @@ def rebuild_operation_efficiency_snapshot(target_date, company=None):
         delete_filters["company"] = company
     frappe.db.delete("Momentum Operation Efficiency Snapshot", delete_filters)
 
-    cond = "jc.docstatus = 1 AND DATE(jctl.from_time) = %(target_date)s"
+    cond = (
+        "jc.docstatus = 1"
+        " AND DATE(jctl.from_time) = %(target_date)s"
+        " AND IFNULL(jc.workstation, '') != ''"
+    )
     params = {"target_date": target_date}
     if company:
         cond += " AND jc.company = %(company)s"
@@ -36,23 +40,31 @@ def rebuild_operation_efficiency_snapshot(target_date, company=None):
     """, params, as_dict=True)
 
     for row in rows:
+        if not row.get("work_center") or not row.get("work_order") or not row.get("operation"):
+            continue
         actual_cost = row.get("actual_cost") or 0
         standard_cost = row.get("standard_cost") or 0
-        snap = frappe.get_doc({
-            "doctype": "Momentum Operation Efficiency Snapshot",
-            "work_order": row["work_order"],
-            "operation": row["operation"],
-            "work_center": row["work_center"],
-            "date": target_date,
-            "company": row["company"],
-            "standard_time_mins": row.get("standard_time_mins") or 0,
-            "actual_time_mins": row.get("actual_time_mins") or 0,
-            "efficiency_percent": row.get("efficiency_percent") or 0,
-            "standard_cost": standard_cost,
-            "actual_cost": actual_cost,
-            "cost_variance": round(actual_cost - standard_cost, 2),
-        })
-        snap.insert(ignore_permissions=True)
+        try:
+            snap = frappe.get_doc({
+                "doctype": "Momentum Operation Efficiency Snapshot",
+                "work_order": row["work_order"],
+                "operation": row["operation"],
+                "work_center": row["work_center"],
+                "date": target_date,
+                "company": row["company"],
+                "standard_time_mins": row.get("standard_time_mins") or 0,
+                "actual_time_mins": row.get("actual_time_mins") or 0,
+                "efficiency_percent": row.get("efficiency_percent") or 0,
+                "standard_cost": standard_cost,
+                "actual_cost": actual_cost,
+                "cost_variance": round(actual_cost - standard_cost, 2),
+            })
+            snap.insert(ignore_permissions=True)
+        except Exception:
+            frappe.log_error(
+                title=f"Operation snapshot insert failed ({target_date})",
+                message=frappe.get_traceback(),
+            )
 
     frappe.db.commit()
 
